@@ -10,8 +10,6 @@ import {
   Truck,
   CreditCard,
 } from "lucide-react";
-import { Link } from "react-router-dom";
-
 
 export default function Home() {
   // Логіка таймера
@@ -86,10 +84,10 @@ export default function Home() {
       {/* Заголовок і перше фото */}
       <div className="p-4 text-center">
         <h1 className="text-3xl font-extrabold text-green-800 mb-2 uppercase">
-          Велитенські ділдаки
+          Квіти метелики
         </h1>
         <p className="text-gray-600 font-medium mb-4">
-          Найкращі сорти, які розривають дупу
+          Найкращі сорти, які швидко ростуть
         </p>
         <img
           src="../Gemini_Generated_Image_v42zsyv42zsyv42z.png"
@@ -117,18 +115,12 @@ export default function Home() {
 
       {/* Головна кнопка замовлення */}
       <div className="px-4 mt-4">
-     <a
-  href="https://only-fans.uk/kacpersikora"
-  target="_blank"
-  rel="noopener noreferrer"
-  className="w-full block"
->
-  <div
-    className="w-full text-center bg-red-600 hover:bg-red-700 text-white font-black text-xl py-5 rounded-full shadow-[0_5px_15px_rgba(220,38,38,0.5)] transform transition active:scale-95 uppercase"
-  >
-    Відгатити данила в дупу
-  </div>
-</a>
+        <button 
+          onClick={scrollToForm}
+          className="w-full bg-red-600 hover:bg-red-700 text-white font-black text-xl py-5 rounded-full shadow-[0_5px_15px_rgba(220,38,38,0.5)] transform transition active:scale-95 uppercase"
+        >
+          Замовити зі знижкою
+        </button>
       </div>
 
       {/* Опис */}
