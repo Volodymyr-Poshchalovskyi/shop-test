@@ -50,9 +50,22 @@ export default function Home() {
   };
 
   return (
-    // Головний контейнер з обмеженою шириною для мобільного вигляду
     <div className="max-w-[480px] mx-auto bg-white min-h-screen shadow-2xl pb-10 font-sans text-gray-800">
       
+      {/* Додаємо стилі для періодичного підстрибування цін */}
+      <style>{`
+        @keyframes gentleJump {
+          0%, 100% { transform: translateY(0); }
+          10% { transform: translateY(-8px); }
+          20% { transform: translateY(0); }
+          30% { transform: translateY(-4px); }
+          40% { transform: translateY(0); }
+        }
+        .price-jump {
+          animation: gentleJump 5s ease-in-out infinite;
+        }
+      `}</style>
+
       {/* Закріплений пульсуючий таймер */}
       <div className="sticky top-0 z-50 bg-white border-b-2 border-green-700 shadow-md p-2 flex flex-col items-center justify-center animate-[pulse_2s_ease-in-out_infinite]">
         <div className="text-sm font-bold text-gray-700 mb-1">
@@ -96,18 +109,20 @@ export default function Home() {
         />
       </div>
 
-      {/* Червоний блок з ціною */}
-      <div className="bg-red-600 text-white flex justify-between items-center w-full px-6 py-3 shadow-inner">
-        <div className="flex flex-col items-center">
-          <span className="text-sm text-red-200">Звичайна ціна</span>
-          <span className="text-2xl line-through font-semibold text-gray-200">
+      {/* Темно-зелений блок з ціною (змінено фон і додано анімацію) */}
+      <div className="bg-green-800 text-white flex justify-between items-center w-full px-6 py-4 shadow-inner">
+        <div className="flex flex-col items-center price-jump" style={{ animationDelay: "0s" }}>
+          <span className="text-sm text-green-200">Звичайна ціна</span>
+          <span className="text-2xl line-through font-semibold text-gray-300">
             799 грн
           </span>
         </div>
-        <ArrowRight size={32} className="text-white" />
-        <div className="flex flex-col items-center">
-          <span className="text-sm text-red-100 font-bold">Акційна ціна</span>
-          <span className="text-3xl font-extrabold text-yellow-300">
+        
+        <ArrowRight size={32} className="text-green-400" />
+        
+        <div className="flex flex-col items-center price-jump" style={{ animationDelay: "0.15s" }}>
+          <span className="text-sm text-green-100 font-bold">Акційна ціна</span>
+          <span className="text-3xl font-extrabold text-yellow-400 drop-shadow-md">
             349 грн
           </span>
         </div>
@@ -227,7 +242,6 @@ export default function Home() {
       <div className="bg-gray-50 py-8 px-5">
         <h2 className="text-2xl font-bold text-center mb-6">Відгуки клієнтів</h2>
         <div className="space-y-4">
-          {/* Відгук 1 */}
           <div className="bg-white p-4 rounded-xl shadow border border-gray-100">
             <div className="flex text-yellow-400 mb-2">
               <Star fill="currentColor" size={18} />
@@ -243,7 +257,6 @@ export default function Home() {
             </p>
             <div className="font-bold text-sm text-gray-900">- Оксана Петренко, 42 роки</div>
           </div>
-          {/* Відгук 2 */}
           <div className="bg-white p-4 rounded-xl shadow border border-gray-100">
             <div className="flex text-yellow-400 mb-2">
               <Star fill="currentColor" size={18} />
@@ -262,7 +275,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Як замовити (Стиль зі скріншоту 2) */}
+      {/* Як замовити */}
       <div className="bg-[#366843] py-8 px-4 text-white">
         <h2 className="text-2xl font-extrabold text-center mb-6 drop-shadow-md">
           Як зробити<br />замовлення?
