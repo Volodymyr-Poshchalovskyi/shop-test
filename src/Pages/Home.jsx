@@ -20,6 +20,11 @@ export default function Home() {
     seconds: 6,
   });
 
+  // Стани для форми
+  const [formData, setFormData] = useState({ name: "", phone: "" });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+
   useEffect(() => {
     // Отримання IP-адреси користувача та вивід у консоль
     const fetchUserIP = async () => {
@@ -62,10 +67,48 @@ export default function Home() {
     document.getElementById("order-form")?.scrollIntoView({ behavior: "smooth" });
   };
 
+  // Обробник зміни полів форми
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Обробник відправки форми
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    // Твій URL Google Apps Script
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwAJo9JJp6dUBkqTeerXy-APkPDajJD90qwreHVYJjxEBTXxILDPdavzbsm67Zz6joi/exec";
+
+    try {
+      await fetch(GOOGLE_SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors", // Обов'язково для уникнення CORS-помилок з Google Scripts
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      // При no-cors ми не можемо прочитати точну відповідь, тому вважаємо запит успішним, якщо він не впав у catch
+      setIsSuccess(true);
+      setFormData({ name: "", phone: "" }); // Очищуємо форму
+      
+      // Приховуємо повідомлення про успіх через 5 секунд
+      setTimeout(() => setIsSuccess(false), 5000);
+    } catch (error) {
+      console.error("Помилка відправки:", error);
+      alert("Сталася помилка при відправці. Перевірте з'єднання та спробуйте ще раз.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="max-w-[480px] mx-auto bg-white min-h-screen shadow-2xl pb-10 font-sans text-gray-800">
       
-      {/* Додаємо стилі для періодичного підстрибування цін */}
+      {/* Стилі для періодичного підстрибування цін */}
       <style>{`
         @keyframes gentleJump {
           0%, 100% { transform: translateY(0); }
@@ -326,15 +369,26 @@ export default function Home() {
           Наш менеджер зв’яжеться з вами для консультації та допоможе оформити замовлення.
         </p>
 
-        <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+        <form className="space-y-4" onSubmit={handleSubmit}>
+          
+          {/* Повідомлення про успішну відправку */}
+          {isSuccess && (
+            <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative text-center font-medium animate-pulse">
+              Дякуємо! Вашу заявку успішно прийнято.
+            </div>
+          )}
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Ім'я та прізвище
             </label>
             <input
               type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
               placeholder="Введіть ваше ім'я"
-              className="w-full border-2 border-gray-300 rounded-lg p-3 focus:outline-none focus:border-green-600"
+              className="w-full border-2 border-gray-300 rounded-lg p-3 focus:outline-none focus:border-green-600 transition-colors"
               required
             />
           </div>
@@ -344,16 +398,28 @@ export default function Home() {
             </label>
             <input
               type="tel"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
               placeholder="+38 (000) 000-00-00"
-              className="w-full border-2 border-gray-300 rounded-lg p-3 focus:outline-none focus:border-green-600"
+              className="w-full border-2 border-gray-300 rounded-lg p-3 focus:outline-none focus:border-green-600 transition-colors"
               required
             />
           </div>
           <button
             type="submit"
-            className="w-full bg-red-600 hover:bg-red-700 text-white font-black text-xl py-4 mt-2 rounded-xl shadow-lg transform transition active:scale-95 uppercase"
+            disabled={isSubmitting}
+            className={`w-full text-white font-black text-xl py-4 mt-2 rounded-xl shadow-lg transform transition uppercase flex justify-center items-center ${
+              isSubmitting 
+                ? "bg-gray-400 cursor-not-allowed" 
+                : "bg-red-600 hover:bg-red-700 active:scale-95 shadow-[0_5px_15px_rgba(220,38,38,0.5)]"
+            }`}
           >
-            Замовити (349 грн)
+            {isSubmitting ? (
+              <span className="animate-pulse">Відправка...</span>
+            ) : (
+              "Замовити (349 грн)"
+            )}
           </button>
         </form>
       </div>
