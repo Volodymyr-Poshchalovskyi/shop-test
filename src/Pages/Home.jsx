@@ -21,6 +21,19 @@ export default function Home() {
   });
 
   useEffect(() => {
+    // Отримання IP-адреси користувача та вивід у консоль
+    const fetchUserIP = async () => {
+      try {
+        const response = await fetch("https://api.ipify.org?format=json");
+        const data = await response.json();
+        console.log("IP користувача:", data.ip);
+      } catch (error) {
+        console.error("Помилка при отриманні IP:", error);
+      }
+    };
+
+    fetchUserIP();
+
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         let { days, hours, minutes, seconds } = prev;
@@ -109,7 +122,7 @@ export default function Home() {
         />
       </div>
 
-      {/* Темно-зелений блок з ціною (змінено фон і додано анімацію) */}
+      {/* Темно-зелений блок з ціною */}
       <div className="bg-green-800 text-white flex justify-between items-center w-full px-6 py-4 shadow-inner">
         <div className="flex flex-col items-center price-jump" style={{ animationDelay: "0s" }}>
           <span className="text-sm text-green-200">Звичайна ціна</span>
