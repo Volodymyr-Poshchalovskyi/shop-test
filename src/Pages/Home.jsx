@@ -9,6 +9,12 @@ import {
   Truck,
   CreditCard,
 } from "lucide-react";
+import mainImage from "../assets/images/IMG_2863.PNG";
+import universalBlockImage from "../assets/images/IMG_2871.PNG";
+import image1 from "../assets/images/IMG_2859.PNG";
+import image2 from "../assets/images/IMG_2865.PNG";
+import image3 from "../assets/images/IMG_2867.PNG";
+import image4 from "../assets/images/IMG_2869.PNG";
 
 export default function Home() {
   // Логіка таймера
@@ -20,10 +26,10 @@ export default function Home() {
   });
 
   // Стани для форми (окремо код країни та сам номер)
-  const [formData, setFormData] = useState({ 
-    name: "", 
-    phoneCode: "+(380)", 
-    phoneLocal: "" 
+  const [formData, setFormData] = useState({
+    name: "",
+    phoneCode: "+(380)",
+    phoneLocal: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -73,10 +79,10 @@ export default function Home() {
   // Валідація імені (лише букви, пробіли, макс 3 слова)
   const handleNameChange = (e) => {
     let val = e.target.value;
-    
+
     // Залишаємо тільки літери (будь-якої мови) та пробіли
     val = val.replace(/[^\p{L}\s]/gu, "");
-    
+
     // Забороняємо кілька пробілів підряд
     val = val.replace(/\s{2,}/g, " ");
 
@@ -99,15 +105,18 @@ export default function Home() {
       if (digits.startsWith("0")) {
         digits = digits.substring(1);
       }
-      
+
       digits = digits.slice(0, 9); // В Україні 9 цифр після +380
-      
+
       // Форматування: 955 15 66 52
       let formatted = digits;
-      if (digits.length > 3) formatted = digits.slice(0, 3) + " " + digits.slice(3);
-      if (digits.length > 5) formatted = formatted.slice(0, 6) + " " + formatted.slice(6);
-      if (digits.length > 7) formatted = formatted.slice(0, 9) + " " + formatted.slice(9);
-      
+      if (digits.length > 3)
+        formatted = digits.slice(0, 3) + " " + digits.slice(3);
+      if (digits.length > 5)
+        formatted = formatted.slice(0, 6) + " " + formatted.slice(6);
+      if (digits.length > 7)
+        formatted = formatted.slice(0, 9) + " " + formatted.slice(9);
+
       setFormData((prev) => ({ ...prev, phoneLocal: formatted }));
     } else {
       // Логіка для інших країн (до 15 цифр, без жорстких пробілів)
@@ -118,10 +127,10 @@ export default function Home() {
 
   // Зміна коду країни
   const handleCountryChange = (e) => {
-    setFormData((prev) => ({ 
-      ...prev, 
-      phoneCode: e.target.value, 
-      phoneLocal: "" // Очищаємо ввід при зміні країни
+    setFormData((prev) => ({
+      ...prev,
+      phoneCode: e.target.value,
+      phoneLocal: "", // Очищаємо ввід при зміні країни
     }));
   };
 
@@ -142,10 +151,11 @@ export default function Home() {
     // ДОДАЄМО ' (апостроф) на початок, щоб Google Таблиці сприймали це як текст, а не формулу!
     const finalDataToSubmit = {
       name: formData.name.trim(),
-      phone: `'${formData.phoneCode} ${formData.phoneLocal}`.trim(), 
+      phone: `'${formData.phoneCode} ${formData.phoneLocal}`.trim(),
     };
 
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwAJo9JJp6dUBkqTeerXy-APkPDajJD90qwreHVYJjxEBTXxILDPdavzbsm67Zz6joi/exec";
+    const GOOGLE_SCRIPT_URL =
+      "https://script.google.com/macros/s/AKfycbwAJo9JJp6dUBkqTeerXy-APkPDajJD90qwreHVYJjxEBTXxILDPdavzbsm67Zz6joi/exec";
 
     try {
       await fetch(GOOGLE_SCRIPT_URL, {
@@ -157,7 +167,7 @@ export default function Home() {
 
       setIsSuccess(true);
       setFormData({ name: "", phoneCode: "+(380)", phoneLocal: "" });
-      
+
       setTimeout(() => setIsSuccess(false), 5000);
     } catch (error) {
       console.error("Помилка відправки:", error);
@@ -169,7 +179,6 @@ export default function Home() {
 
   return (
     <div className="max-w-[480px] mx-auto bg-white min-h-screen shadow-2xl pb-10 font-sans text-gray-800">
-      
       <style>{`
         @keyframes gentleJump {
           0%, 100% { transform: translateY(0); }
@@ -196,27 +205,35 @@ export default function Home() {
       {/* Таймер */}
       <div className="sticky top-0 z-50 bg-white border-b-2 border-green-700 shadow-md p-2 flex flex-col items-center justify-center">
         <div className="text-sm font-bold text-gray-700 mb-1">
-          До кінця акції залишилось:
+          До кінця акції:
         </div>
         <div className="flex gap-2 text-3xl font-bold text-gray-900 animate-pulse">
           <div className="flex flex-col items-center">
             <span>{formatTime(timeLeft.days)}</span>
-            <span className="text-[10px] font-normal text-gray-500 uppercase">днів</span>
+            <span className="text-[10px] font-normal text-gray-500 uppercase">
+              днів
+            </span>
           </div>
           <span className="pb-3 text-gray-900">:</span>
           <div className="flex flex-col items-center">
             <span>{formatTime(timeLeft.hours)}</span>
-            <span className="text-[10px] font-normal text-gray-500 uppercase">годин</span>
+            <span className="text-[10px] font-normal text-gray-500 uppercase">
+              годин
+            </span>
           </div>
           <span className="pb-3 text-gray-900">:</span>
           <div className="flex flex-col items-center">
             <span>{formatTime(timeLeft.minutes)}</span>
-            <span className="text-[10px] font-normal text-gray-500 uppercase">хвилин</span>
+            <span className="text-[10px] font-normal text-gray-500 uppercase">
+              хвилин
+            </span>
           </div>
           <span className="pb-3 text-gray-900">:</span>
           <div className="flex flex-col items-center">
             <span>{formatTime(timeLeft.seconds)}</span>
-            <span className="text-[10px] font-normal text-gray-500 uppercase">секунд</span>
+            <span className="text-[10px] font-normal text-gray-500 uppercase">
+              секунд
+            </span>
           </div>
         </div>
       </div>
@@ -230,7 +247,7 @@ export default function Home() {
           Найкращі сорти, які швидко ростуть
         </p>
         <img
-          src="../Gemini_Generated_Image_v42zsyv42zsyv42z.png"
+          src={mainImage}
           alt="Квіти метелики"
           className="w-full h-auto rounded-xl shadow-md object-cover"
         />
@@ -238,17 +255,25 @@ export default function Home() {
 
       {/* Блок цін */}
       <div className="bg-green-800 text-white flex justify-between items-center w-full px-6 py-4 shadow-inner">
-        <div className="flex flex-col items-center price-jump" style={{ animationDelay: "0s" }}>
+        <div
+          className="flex flex-col items-center price-jump"
+          style={{ animationDelay: "0s" }}
+        >
           <span className="text-sm text-green-200">Звичайна ціна</span>
           <span className="text-2xl line-through font-semibold text-gray-300">
             550 грн
           </span>
         </div>
-        
+
         <ArrowRight size={32} className="text-green-400" />
-        
-        <div className="flex flex-col items-center price-jump" style={{ animationDelay: "0.15s" }}>
-          <span className="text-sm text-green-100 font-bold">Акційна ціна</span>
+
+        <div
+          className="flex flex-col items-center price-jump"
+          style={{ animationDelay: "0.15s" }}
+        >
+          <span className="text-sm text-green-100 font-bold">
+            Акційна ціна
+          </span>
           <span className="text-3xl font-extrabold text-yellow-400 drop-shadow-md">
             275 грн
           </span>
@@ -257,7 +282,7 @@ export default function Home() {
 
       {/* Кнопка */}
       <div className="px-4 mt-4">
-        <button 
+        <button
           onClick={scrollToForm}
           className="w-full bg-red-600 hover:bg-red-700 text-white font-black text-xl py-5 rounded-full shadow-[0_5px_15px_rgba(220,38,38,0.5)] transform transition active:scale-95 uppercase"
         >
@@ -271,7 +296,11 @@ export default function Home() {
           <h2 className="text-xl font-bold text-center text-green-800 mb-3 uppercase">
             Неймовірні квіти з цвітом у формі метеликів
           </h2>
-          <img src="../Gemini_Generated_Image_p65t00p65t00p65t.png" alt="Квіти" className="w-full rounded-lg mb-4" />
+          <img
+            src={image1}
+            alt="Квіти"
+            className="w-full rounded-lg mb-4"
+          />
           <p>
             Краса саду не виникає сама по собі. Вона починається з маленького
             бажання — додати кольору, затишку, трохи живого навколо. Здається,
@@ -305,7 +334,11 @@ export default function Home() {
           <h2 className="text-xl font-bold text-center text-green-800 mb-3 uppercase">
             🌿 Універсальні для будь-якого простору
           </h2>
-          <img src="../Gemini_Generated_Image_nzuopdnzuopdnzuo.png" alt="Універсальні квіти" className="w-full rounded-lg mb-4" />
+          <img
+            src={universalBlockImage}
+            alt="Універсальні квіти"
+            className="w-full rounded-lg mb-4"
+          />
           <p>
             Однаково добре почуваються на сонці та в напівтіні, у відкритому саду
             та на обмеженій площі балкону. Адаптуються — і розквітають.
@@ -320,11 +353,16 @@ export default function Home() {
             Посадіть один раз — і вони повертатимуться щовесни. Свіже листя, ніжні
             квіти, без повторних витрат.
           </p>
+          <img
+            src={image2}
+            alt="Багаторічні квіти метелики"
+            className="w-full rounded-lg mt-4"
+          />
         </div>
       </div>
 
       <div className="px-4 py-4">
-        <button 
+        <button
           onClick={scrollToForm}
           className="w-full bg-green-600 hover:bg-green-700 text-white font-bold text-xl py-4 rounded-xl shadow-lg transform transition active:scale-95 uppercase"
         >
@@ -340,30 +378,50 @@ export default function Home() {
         <ul className="space-y-4">
           <li className="flex items-start gap-3">
             <span className="text-xl shrink-0 leading-none mt-1">🦋</span>
-            <p><b>Природний магніт для живої природи</b> — приваблює метеликів і бджіл прямо до вас у сад.</p>
+            <p>
+              <b>Природний магніт для живої природи</b> — приваблює метеликів і
+              бджіл прямо до вас у сад.
+            </p>
           </li>
           <li className="flex items-start gap-3">
             <span className="text-xl shrink-0 leading-none mt-1">🌱</span>
-            <p><b>Справжній багаторічник</b> — один раз посадили, роками насолоджуєтесь.</p>
+            <p>
+              <b>Справжній багаторічник</b> — один раз посадили, роками
+              насолоджуєтесь.
+            </p>
           </li>
           <li className="flex items-start gap-3">
             <span className="text-xl shrink-0 leading-none mt-1">📍</span>
-            <p><b>Підходить скрізь</b> — сад, балкон, горщик на підвіконні.</p>
+            <p>
+              <b>Підходить скрізь</b> — сад, балкон, горщик на підвіконні.
+            </p>
           </li>
           <li className="flex items-start gap-3">
             <span className="text-xl shrink-0 leading-none mt-1">❄️</span>
-            <p><b>Морозостійкий</b> — витримує до −20°C без укриття.</p>
+            <p>
+              <b>Морозостійкий</b> — витримує до −20°C без укриття.
+            </p>
           </li>
           <li className="flex items-start gap-3">
             <span className="text-xl shrink-0 leading-none mt-1">🌤️</span>
-            <p><b>Любить розсіяне світло</b> — добре росте в добре провітрюваних місцях із м'яким освітленням.</p>
+            <p>
+              <b>Любить розсіяне світло</b> — добре росте в добре провітрюваних
+              місцях із м'яким освітленням.
+            </p>
           </li>
         </ul>
+        <img
+          src={image3}
+          alt="Сад з квітами метеликами"
+          className="w-full rounded-lg mt-6"
+        />
       </div>
 
       {/* Відгуки */}
       <div className="bg-gray-50 py-8 px-5">
-        <h2 className="text-2xl font-bold text-center mb-6">Відгуки клієнтів</h2>
+        <h2 className="text-2xl font-bold text-center mb-6">
+          Відгуки клієнтів
+        </h2>
         <div className="space-y-4">
           <div className="bg-white p-4 rounded-xl shadow border border-gray-100">
             <div className="flex text-yellow-400 mb-2">
@@ -378,7 +436,9 @@ export default function Home() {
               сусіди зупиняються та питають, що це за квіти. Двір виглядає так,
               ніби над ним працював дизайнер. А я просто посадила та полила."
             </p>
-            <div className="font-bold text-sm text-gray-900">- Алла Ковальчук</div>
+            <div className="font-bold text-sm text-gray-900">
+              - Алла Ковальчук
+            </div>
           </div>
           <div className="bg-white p-4 rounded-xl shadow border border-gray-100">
             <div className="flex text-yellow-400 mb-2">
@@ -393,7 +453,9 @@ export default function Home() {
               зацвіли — я просто стояла і дивилась. Це справді схоже на метеликів,
               що зависли над землею. Моя донька думала, що це декор із магазину."
             </p>
-            <div className="font-bold text-sm text-gray-900">- Марина Нестеренко</div>
+            <div className="font-bold text-sm text-gray-900">
+              - Марина Нестеренко
+            </div>
           </div>
         </div>
       </div>
@@ -417,7 +479,9 @@ export default function Home() {
           <div className="bg-[#8ca891] border-2 border-white rounded-xl p-4 flex flex-col items-center text-center text-gray-900">
             <Truck size={40} className="mb-2" />
             <h3 className="font-bold text-lg mb-1">Відправка</h3>
-            <p className="text-xs leading-tight">Доставляємо ваш товар 1-3 днів</p>
+            <p className="text-xs leading-tight">
+              Доставляємо ваш товар 1-3 днів
+            </p>
           </div>
           <div className="bg-[#8ca891] border-2 border-white rounded-xl p-4 flex flex-col items-center text-center text-gray-900">
             <CreditCard size={40} className="mb-2" />
@@ -425,6 +489,11 @@ export default function Home() {
             <p className="text-xs leading-tight">Сплачуєте при отриманні</p>
           </div>
         </div>
+        <img
+          src={image4}
+          alt="Деталі квітів метеликів"
+          className="w-full rounded-lg mt-8"
+        />
       </div>
 
       {/* Форма замовлення */}
@@ -433,11 +502,11 @@ export default function Home() {
           Замовляйте зараз - Отримуйте знижку 50%
         </h2>
         <p className="text-center text-gray-600 text-sm mb-6">
-          Наш менеджер зв’яжеться з вами для консультації та допоможе оформити замовлення.
+          Наш менеджер зв’яжеться з вами для консультації та допоможе оформити
+          замовлення.
         </p>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
-          
           {isSuccess && (
             <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative text-center font-medium animate-pulse">
               Дякуємо! Вашу заявку успішно прийнято.
@@ -479,14 +548,16 @@ export default function Home() {
                   <option value="+(373)">🇲🇩 +(373)</option>
                 </select>
               </div>
-              
+
               {/* Інпут для самого номера */}
               <input
                 type="tel"
                 name="phoneLocal"
                 value={formData.phoneLocal}
                 onChange={handlePhoneLocalChange}
-                placeholder={formData.phoneCode === "+(380)" ? "000 00 00 00" : "000000000"}
+                placeholder={
+                  formData.phoneCode === "+(380)" ? "000 00 00 00" : "000000000"
+                }
                 className="w-full p-3 focus:outline-none tracking-wide"
                 required
               />
@@ -497,8 +568,8 @@ export default function Home() {
             type="submit"
             disabled={isSubmitting}
             className={`w-full text-white font-black text-xl py-4 mt-2 rounded-xl shadow-lg transform transition uppercase flex justify-center items-center ${
-              isSubmitting 
-                ? "bg-gray-400 cursor-not-allowed" 
+              isSubmitting
+                ? "bg-gray-400 cursor-not-allowed"
                 : "bg-red-600 hover:bg-red-700 active:scale-95 shadow-[0_5px_15px_rgba(220,38,38,0.5)]"
             }`}
           >
