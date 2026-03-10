@@ -5,6 +5,7 @@ import { ArrowRight, Star, PenSquare, Phone, Truck, CreditCard } from "lucide-re
 // Імпортуємо наші нові модулі
 import { useTimer } from "../Hooks/useTimer";
 import OrderForm from "../Components/OrderForm";
+import { Link } from "react-router-dom";
 
 // Імпорт зображень (шляхи залишаються твоїми)
 import mainImage from "../assets/images/IMG_2863.PNG";
@@ -202,7 +203,11 @@ export default function Home() {
       <OrderForm />
 
       <footer className="mt-8 py-6 bg-gray-900 text-gray-400 text-center text-sm">
-        <div><a href="#" className="underline hover:text-white transition">Політика конфіденційності</a></div>
+        <div>
+          <Link to="/privacy-policy" className="underline hover:text-white transition">
+            Політика конфіденційності
+          </Link>
+        </div>
       </footer>
     </div>
   );
