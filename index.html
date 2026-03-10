@@ -1,10 +1,77 @@
 <!doctype html>
-<html lang="en">
+<html lang="uk">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React</title>
+
+    <!-- ✅ Favicon -->
+    <link rel="icon" type="image/png" href="/sakura.png" />
+    <link rel="apple-touch-icon" href="/sakura.png" />
+
+    <!-- ✅ Viewport — критично для мобільного лендингу -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+
+    <!-- ✅ Theme color (колір рядка браузера на Android/Chrome) -->
+    <meta name="theme-color" content="#166534" />
+
+    <!-- ✅ SEO — основні мета-теги -->
+    <title>Квіти Метелики — насіння зі знижкою 50% | Доставка по Україні</title>
+    <meta name="description" content="Квіти-метелики з Нідерландів — 100% проростання, багаторічник, морозостійкий до −20°C. Акційна ціна 275 грн замість 550 грн. Оплата при отриманні, доставка 1–3 дні." />
+    <meta name="keywords" content="квіти метелики, купити насіння, квіти для саду, багаторічні квіти, квіти балкон, квіти клумба, насіння з нідерландів" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- ✅ Canonical URL — заміни на свій реальний домен після деплою -->
+    <link rel="canonical" href="https://your-domain.com/" />
+
+    <!-- ✅ Open Graph — для Facebook реклами, постів, Telegram, Viber (КРИТИЧНО!) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="uk_UA" />
+    <meta property="og:site_name" content="Квіти Метелики" />
+    <meta property="og:url" content="https://your-domain.com/" />
+    <meta property="og:title" content="🦋 Квіти Метелики — знижка 50% лише зараз!" />
+    <meta property="og:description" content="Неймовірні квіти з пелюстками у формі метеликів. З Нідерландів, 100% проростання, багаторічник. Лише 275 грн — оплата при отриманні." />
+    <!-- Заміни URL після того як залʼєш og-image.jpg у папку public/ -->
+    <meta property="og:image" content="https://your-domain.com/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Квіти метелики — акційна ціна 275 грн" />
+
+    <!-- ✅ Twitter Card (також підхоплюється LinkedIn, Discord та ін.) -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="🦋 Квіти Метелики — знижка 50% лише зараз!" />
+    <meta name="twitter:description" content="Неймовірні квіти з пелюстками у формі метеликів. З Нідерландів, 100% проростання. Лише 275 грн — оплата при отриманні." />
+    <meta name="twitter:image" content="https://your-domain.com/og-image.jpg" />
+
+    <!-- ✅ Preconnect — пришвидшує завантаження зовнішніх ресурсів -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- ✅ Schema.org — структуровані дані для Google (багатий сніпет у пошуку) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      "name": "Квіти Метелики",
+      "description": "Насіння квітів-метеликів з Нідерландів. Багаторічник, морозостійкий до −20°C, 100% проростання.",
+      "image": "https://your-domain.com/og-image.jpg",
+      "brand": {
+        "@type": "Brand",
+        "name": "Квіти Метелики"
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": "275",
+        "priceCurrency": "UAH",
+        "availability": "https://schema.org/InStock",
+        "priceValidUntil": "2025-12-31",
+        "url": "https://your-domain.com/"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "5",
+        "reviewCount": "2"
+      }
+    }
+    </script>
   </head>
   <body>
     <div id="root"></div>

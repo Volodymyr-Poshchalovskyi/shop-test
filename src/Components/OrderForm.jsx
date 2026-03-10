@@ -1,76 +1,156 @@
 "use client";
 import React, { useState } from "react";
+import { isValidPhoneNumber, parsePhoneNumber } from "libphonenumber-js";
 import { submitOrderData } from "../Services/api";
 import SuccessModal from "./SuccessModal";
+
+// Мінімальна довжина цифр для кожної країни
+const COUNTRY_CONFIG = {
+  "+(380)": { code: "UA", minDigits: 9, placeholder: "000 00 00 00" },
+  "+(48)":  { code: "PL", minDigits: 9, placeholder: "000 000 000" },
+  "+(49)":  { code: "DE", minDigits: 10, placeholder: "0000 0000000" },
+  "+(420)": { code: "CZ", minDigits: 9, placeholder: "000 000 000" },
+  "+(373)": { code: "MD", minDigits: 8, placeholder: "00 000 000" },
+};
 
 export default function OrderForm() {
   const [formData, setFormData] = useState({
     name: "",
     phoneCode: "+(380)",
     phoneLocal: "",
-    website: "", // honeypot
+    website: "",
   });
+
+  const [errors, setErrors] = useState({
+    name: "",
+    phone: "",
+  });
+
+  const [touched, setTouched] = useState({
+    name: false,
+    phone: false,
+  });
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [lastSubmitTime, setLastSubmitTime] = useState(null);
   const COOLDOWN_MS = 60000;
 
+  // ── Валідація імені ──────────────────────────────────────────
+  const validateName = (val) => {
+    if (!val || val.trim().length === 0) return "Введіть ім'я";
+    if (val.trim().length < 2) return "Ім'я занадто коротке";
+    return "";
+  };
+
+  // ── Валідація телефону ───────────────────────────────────────
+  const validatePhone = (phoneCode, phoneLocal) => {
+    const digits = phoneLocal.replace(/\D/g, "");
+    const config = COUNTRY_CONFIG[phoneCode];
+    if (!digits) return "Введіть номер телефону";
+    if (digits.length < config.minDigits) return `Номер має містити ${config.minDigits} цифр`;
+
+    // Перевірка через libphonenumber-js
+    try {
+      const fullNumber = phoneCode.replace(/[^+\d]/g, "") + digits;
+      const isValid = isValidPhoneNumber(fullNumber, config.code);
+      if (!isValid) return "Невалідний номер для обраної країни";
+    } catch {
+      return "Невалідний номер";
+    }
+
+    return "";
+  };
+
+  // ── Handlers ────────────────────────────────────────────────
   const handleNameChange = (e) => {
     let val = e.target.value;
     val = val.replace(/[^\p{L}\s]/gu, "");
     val = val.replace(/\s{2,}/g, " ");
     const words = val.trimStart().split(" ");
-    if (words.length > 3) {
-      val = words.slice(0, 3).join(" ") + " ";
-    }
+    if (words.length > 3) val = words.slice(0, 3).join(" ") + " ";
+
     setFormData((prev) => ({ ...prev, name: val }));
+
+    if (touched.name) {
+      setErrors((prev) => ({ ...prev, name: validateName(val) }));
+    }
+  };
+
+  const handleNameBlur = () => {
+    setTouched((prev) => ({ ...prev, name: true }));
+    setErrors((prev) => ({ ...prev, name: validateName(formData.name) }));
   };
 
   const handlePhoneLocalChange = (e) => {
     let digits = e.target.value.replace(/\D/g, "");
+    const config = COUNTRY_CONFIG[formData.phoneCode];
+    let formatted = digits;
+
     if (formData.phoneCode === "+(380)") {
       if (digits.startsWith("0")) digits = digits.substring(1);
       digits = digits.slice(0, 9);
-      let formatted = digits;
+      formatted = digits;
       if (digits.length > 3) formatted = digits.slice(0, 3) + " " + digits.slice(3);
       if (digits.length > 5) formatted = formatted.slice(0, 6) + " " + formatted.slice(6);
       if (digits.length > 7) formatted = formatted.slice(0, 9) + " " + formatted.slice(9);
-      setFormData((prev) => ({ ...prev, phoneLocal: formatted }));
+    } else if (formData.phoneCode === "+(48)" || formData.phoneCode === "+(420)") {
+      digits = digits.slice(0, 9);
+      formatted = digits;
+      if (digits.length > 3) formatted = digits.slice(0, 3) + " " + digits.slice(3);
+      if (digits.length > 6) formatted = formatted.slice(0, 7) + " " + formatted.slice(7);
     } else {
       digits = digits.slice(0, 15);
-      setFormData((prev) => ({ ...prev, phoneLocal: digits }));
+      formatted = digits;
+    }
+
+    setFormData((prev) => ({ ...prev, phoneLocal: formatted }));
+
+    if (touched.phone) {
+      setErrors((prev) => ({
+        ...prev,
+        phone: validatePhone(formData.phoneCode, formatted),
+      }));
     }
   };
 
-  const handleCountryChange = (e) => {
-    setFormData((prev) => ({
+  const handlePhoneBlur = () => {
+    setTouched((prev) => ({ ...prev, phone: true }));
+    setErrors((prev) => ({
       ...prev,
-      phoneCode: e.target.value,
-      phoneLocal: "",
+      phone: validatePhone(formData.phoneCode, formData.phoneLocal),
     }));
+  };
+
+  const handleCountryChange = (e) => {
+    const newCode = e.target.value;
+    setFormData((prev) => ({ ...prev, phoneCode: newCode, phoneLocal: "" }));
+    setErrors((prev) => ({ ...prev, phone: "" }));
+    setTouched((prev) => ({ ...prev, phone: false }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Honeypot: якщо бот заповнив приховане поле — тихо ігноруємо
-    if (formData.website !== "") {
-      return;
-    }
+    // Honeypot
+    if (formData.website !== "") return;
 
-    // Cooldown: захист від повторних кліків
+    // Cooldown
     const now = Date.now();
     if (lastSubmitTime && now - lastSubmitTime < COOLDOWN_MS) {
       const secondsLeft = Math.ceil((COOLDOWN_MS - (now - lastSubmitTime)) / 1000);
-      alert(`Зачекайте ${secondsLeft} секунд перед повторною відправкою.`);
+      setErrors((prev) => ({ ...prev, phone: `Зачекайте ${secondsLeft} сек перед повторною відправкою` }));
       return;
     }
 
-    const pureDigits = formData.phoneLocal.replace(/\D/g, "");
-    if (formData.phoneCode === "+(380)" && pureDigits.length < 9) {
-      alert("Будь ласка, введіть повний номер телефону.");
-      return;
-    }
+    // Фінальна валідація перед відправкою
+    const nameError = validateName(formData.name);
+    const phoneError = validatePhone(formData.phoneCode, formData.phoneLocal);
+
+    setTouched({ name: true, phone: true });
+    setErrors({ name: nameError, phone: phoneError });
+
+    if (nameError || phoneError) return;
 
     setIsSubmitting(true);
     setLastSubmitTime(now);
@@ -84,13 +164,20 @@ export default function OrderForm() {
       await submitOrderData(finalDataToSubmit);
       setIsSuccess(true);
       setFormData({ name: "", phoneCode: "+(380)", phoneLocal: "", website: "" });
+      setTouched({ name: false, phone: false });
+      setErrors({ name: "", phone: "" });
       setTimeout(() => setIsSuccess(false), 5000);
     } catch (error) {
-      alert(error.message);
+      setErrors((prev) => ({ ...prev, phone: error.message }));
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const isFormValid =
+    !validateName(formData.name) && !validatePhone(formData.phoneCode, formData.phoneLocal);
+
+  const config = COUNTRY_CONFIG[formData.phoneCode];
 
   return (
     <>
@@ -102,9 +189,9 @@ export default function OrderForm() {
           Наш менеджер зв'яжеться з вами для консультації та допоможе оформити замовлення.
         </p>
 
-        <form className="space-y-4" onSubmit={handleSubmit}>
+        <form className="space-y-4" onSubmit={handleSubmit} noValidate>
 
-          {/* Honeypot — приховане поле, люди не бачать, боти заповнюють */}
+          {/* Honeypot */}
           <div style={{ position: "absolute", left: "-9999px", opacity: 0, height: 0, overflow: "hidden" }}>
             <input
               type="text"
@@ -116,6 +203,7 @@ export default function OrderForm() {
             />
           </div>
 
+          {/* Ім'я */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Ім'я та прізвище
@@ -125,17 +213,37 @@ export default function OrderForm() {
               name="name"
               value={formData.name}
               onChange={handleNameChange}
+              onBlur={handleNameBlur}
               placeholder="Введіть ваше ім'я"
-              className="w-full border-2 border-gray-300 rounded-lg p-3 focus:outline-none focus:border-green-600 transition-colors"
-              required
+              className={`w-full border-2 rounded-lg p-3 focus:outline-none transition-colors ${
+                touched.name && errors.name
+                  ? "border-red-500 bg-red-50 focus:border-red-500"
+                  : touched.name && !errors.name
+                  ? "border-green-500 bg-green-50 focus:border-green-500"
+                  : "border-gray-300 focus:border-green-600"
+              }`}
             />
+            {/* Іконка статусу */}
+            {touched.name && (
+              <div className={`flex items-center gap-1 mt-1 text-sm font-medium ${errors.name ? "text-red-500" : "text-green-600"}`}>
+                <span>{errors.name ? "✕" : "✓"}</span>
+                <span>{errors.name || "Все добре"}</span>
+              </div>
+            )}
           </div>
 
+          {/* Телефон */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Номер телефону
             </label>
-            <div className="flex w-full border-2 border-gray-300 rounded-lg focus-within:border-green-600 transition-colors overflow-hidden bg-white">
+            <div className={`flex w-full border-2 rounded-lg transition-colors overflow-hidden bg-white ${
+              touched.phone && errors.phone
+                ? "border-red-500"
+                : touched.phone && !errors.phone
+                ? "border-green-500"
+                : "border-gray-300 focus-within:border-green-600"
+            }`}>
               <div className="flex items-center border-r-2 border-gray-300 bg-gray-50">
                 <select
                   name="phoneCode"
@@ -155,20 +263,29 @@ export default function OrderForm() {
                 name="phoneLocal"
                 value={formData.phoneLocal}
                 onChange={handlePhoneLocalChange}
-                placeholder={formData.phoneCode === "+(380)" ? "000 00 00 00" : "000000000"}
-                className="w-full p-3 focus:outline-none tracking-wide"
-                required
+                onBlur={handlePhoneBlur}
+                placeholder={config.placeholder}
+                className="w-full p-3 focus:outline-none tracking-wide bg-transparent"
               />
             </div>
+            {touched.phone && (
+              <div className={`flex items-center gap-1 mt-1 text-sm font-medium ${errors.phone ? "text-red-500" : "text-green-600"}`}>
+                <span>{errors.phone ? "✕" : "✓"}</span>
+                <span>{errors.phone || "Номер валідний"}</span>
+              </div>
+            )}
           </div>
 
+          {/* Кнопка — сіра якщо форма невалідна */}
           <button
             type="submit"
             disabled={isSubmitting}
             className={`w-full text-white font-black text-xl py-4 mt-2 rounded-xl shadow-lg transform transition uppercase flex justify-center items-center ${
               isSubmitting
                 ? "bg-red-700 opacity-90 cursor-wait"
-                : "bg-red-600 hover:bg-red-700 active:scale-95 shadow-[0_5px_15px_rgba(220,38,38,0.5)]"
+                : isFormValid
+                ? "bg-red-600 hover:bg-red-700 active:scale-95 shadow-[0_5px_15px_rgba(220,38,38,0.5)]"
+                : "bg-gray-400 cursor-not-allowed"
             }`}
           >
             {isSubmitting ? (
@@ -183,13 +300,11 @@ export default function OrderForm() {
               "Замовити (275 грн)"
             )}
           </button>
+
         </form>
       </div>
 
-      <SuccessModal
-        isOpen={isSuccess}
-        onClose={() => setIsSuccess(false)}
-      />
+      <SuccessModal isOpen={isSuccess} onClose={() => setIsSuccess(false)} />
     </>
   );
 }
