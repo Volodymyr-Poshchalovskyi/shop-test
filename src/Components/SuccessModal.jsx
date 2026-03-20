@@ -4,10 +4,7 @@ import { CheckCircle } from "lucide-react";
 export default function SuccessModal({ isOpen, onClose }) {
   useEffect(() => {
     if (isOpen && typeof window !== "undefined" && window.fbq) {
-      window.fbq('track', 'Purchase', {
-        value: 275.00,
-        currency: 'UAH'
-      });
+      window.fbq('track', 'Lead');
     }
   }, [isOpen]);
 
