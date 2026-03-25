@@ -111,16 +111,17 @@ export default function Home() {
         </div>
 
         {/* Таймер та Блок продажів */}
-        <div className="sticky top-0 z-50 bg-white border-b-2 border-green-700 shadow-md p-2 flex flex-col items-center justify-center">
+        {/* Таймер та Блок продажів */}
+        <div className="sticky top-0 z-50 bg-white border-b-2 border-green-700 shadow-md py-1.5 px-2 flex flex-col items-center justify-center">
           <CountdownTimer />
           
-          {/* НОВИЙ БЛОК: Продано сьогодні (без обводки) */}
-          <div className="mt-2 bg-red-50 px-4 py-1 rounded-full flex items-center gap-2 shadow-sm">
-            <span className="text-sm font-semibold text-gray-700">Продано сьогодні:</span>
-            <span className={`text-red-600 font-black text-lg ${animateSold ? "animate-pop" : ""}`}>
+          {/* ОНОВЛЕНИЙ БЛОК: Продано сьогодні (без фону, менший розмір) */}
+          <div className="mt-1 flex items-center gap-1.5">
+            <span className="text-xs font-medium text-gray-600">Продано сьогодні:</span>
+            <span className={`text-red-600 font-bold text-sm ${animateSold ? "animate-pop" : ""}`}>
               {soldCount}
             </span>
-            <span className="text-lg leading-none" aria-hidden="true">🔥</span>
+            <span className="text-sm leading-none" aria-hidden="true">🔥</span>
           </div>
         </div>
 
