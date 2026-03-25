@@ -1,12 +1,11 @@
 "use client";
 import React, { useState } from "react";
-import { isValidPhoneNumber, parsePhoneNumber } from "libphonenumber-js";
 import { submitOrderData } from "../Services/api";
 import SuccessModal from "./SuccessModal";
 
-// Мінімальна довжина цифр для кожної країни
+// Оновили +380 на +38, додали формат з 10 цифр (напр. 099 123 45 67)
 const COUNTRY_CONFIG = {
-  "+(380)": { code: "UA", minDigits: 9, placeholder: "000 00 00 00" },
+  "+(38)":  { code: "UA", minDigits: 10, placeholder: "099 000 00 00" },
   "+(48)":  { code: "PL", minDigits: 9, placeholder: "000 000 000" },
   "+(49)":  { code: "DE", minDigits: 10, placeholder: "0000 0000000" },
   "+(420)": { code: "CZ", minDigits: 9, placeholder: "000 000 000" },
@@ -16,7 +15,7 @@ const COUNTRY_CONFIG = {
 export default function OrderForm() {
   const [formData, setFormData] = useState({
     name: "",
-    phoneCode: "+(380)",
+    phoneCode: "+(38)", // Змінено на +38
     phoneLocal: "",
     website: "",
   });
@@ -36,33 +35,22 @@ export default function OrderForm() {
   const [lastSubmitTime, setLastSubmitTime] = useState(null);
   const COOLDOWN_MS = 60000;
 
-  // ── Валідація імені ──────────────────────────────────────────
   const validateName = (val) => {
     if (!val || val.trim().length === 0) return "Введіть ім'я";
     if (val.trim().length < 2) return "Ім'я занадто коротке";
     return "";
   };
 
-  // ── Валідація телефону ───────────────────────────────────────
   const validatePhone = (phoneCode, phoneLocal) => {
     const digits = phoneLocal.replace(/\D/g, "");
     const config = COUNTRY_CONFIG[phoneCode];
+    
     if (!digits) return "Введіть номер телефону";
-    if (digits.length < config.minDigits) return `Номер має містити ${config.minDigits} цифр`;
-
-    // Перевірка через libphonenumber-js
-    try {
-      const fullNumber = phoneCode.replace(/[^+\d]/g, "") + digits;
-      const isValid = isValidPhoneNumber(fullNumber, config.code);
-      if (!isValid) return "Невалідний номер для обраної країни";
-    } catch {
-      return "Невалідний номер";
-    }
+    if (digits.length < config.minDigits) return `Номер має містити мінімум ${config.minDigits} цифр`;
 
     return "";
   };
 
-  // ── Handlers ────────────────────────────────────────────────
   const handleNameChange = (e) => {
     let val = e.target.value;
     val = val.replace(/[^\p{L}\s]/gu, "");
@@ -87,13 +75,13 @@ export default function OrderForm() {
     const config = COUNTRY_CONFIG[formData.phoneCode];
     let formatted = digits;
 
-    if (formData.phoneCode === "+(380)") {
-      if (digits.startsWith("0")) digits = digits.substring(1);
-      digits = digits.slice(0, 9);
+    // Нова логіка для України (+38) — дозволяємо вводити 0 на початку
+    if (formData.phoneCode === "+(38)") {
+      digits = digits.slice(0, 10); // 10 цифр: 0991234567
       formatted = digits;
-      if (digits.length > 3) formatted = digits.slice(0, 3) + " " + digits.slice(3);
-      if (digits.length > 5) formatted = formatted.slice(0, 6) + " " + formatted.slice(6);
-      if (digits.length > 7) formatted = formatted.slice(0, 9) + " " + formatted.slice(9);
+      if (digits.length > 3) formatted = digits.slice(0, 3) + " " + digits.slice(3); // 099 123...
+      if (digits.length > 6) formatted = formatted.slice(0, 7) + " " + formatted.slice(7); // 099 123 45...
+      if (digits.length > 8) formatted = formatted.slice(0, 10) + " " + formatted.slice(10); // 099 123 45 67
     } else if (formData.phoneCode === "+(48)" || formData.phoneCode === "+(420)") {
       digits = digits.slice(0, 9);
       formatted = digits;
@@ -131,19 +119,15 @@ export default function OrderForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (formData.website !== "") return; // Honeypot
 
-    // Honeypot
-    if (formData.website !== "") return;
-
-    // Cooldown
     const now = Date.now();
     if (lastSubmitTime && now - lastSubmitTime < COOLDOWN_MS) {
       const secondsLeft = Math.ceil((COOLDOWN_MS - (now - lastSubmitTime)) / 1000);
-      setErrors((prev) => ({ ...prev, phone: `Зачекайте ${secondsLeft} сек перед повторною відправкою` }));
+      setErrors((prev) => ({ ...prev, phone: `Зачекайте ${secondsLeft} сек` }));
       return;
     }
 
-    // Фінальна валідація перед відправкою
     const nameError = validateName(formData.name);
     const phoneError = validatePhone(formData.phoneCode, formData.phoneLocal);
 
@@ -163,7 +147,7 @@ export default function OrderForm() {
     try {
       await submitOrderData(finalDataToSubmit);
       setIsSuccess(true);
-      setFormData({ name: "", phoneCode: "+(380)", phoneLocal: "", website: "" });
+      setFormData({ name: "", phoneCode: "+(38)", phoneLocal: "", website: "" });
       setTouched({ name: false, phone: false });
       setErrors({ name: "", phone: "" });
       setTimeout(() => setIsSuccess(false), 5000);
@@ -173,9 +157,6 @@ export default function OrderForm() {
       setIsSubmitting(false);
     }
   };
-
-  const isFormValid =
-    !validateName(formData.name) && !validatePhone(formData.phoneCode, formData.phoneLocal);
 
   const config = COUNTRY_CONFIG[formData.phoneCode];
 
@@ -190,24 +171,12 @@ export default function OrderForm() {
         </p>
 
         <form className="space-y-4" onSubmit={handleSubmit} noValidate>
-
-          {/* Honeypot */}
           <div style={{ position: "absolute", left: "-9999px", opacity: 0, height: 0, overflow: "hidden" }}>
-            <input
-              type="text"
-              name="website"
-              value={formData.website}
-              onChange={(e) => setFormData((prev) => ({ ...prev, website: e.target.value }))}
-              tabIndex="-1"
-              autoComplete="off"
-            />
+            <input type="text" name="website" value={formData.website} onChange={(e) => setFormData((prev) => ({ ...prev, website: e.target.value }))} tabIndex="-1" autoComplete="off" />
           </div>
 
-          {/* Ім'я */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Ім'я та прізвище
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Ім'я та прізвище</label>
             <input
               type="text"
               name="name"
@@ -216,33 +185,20 @@ export default function OrderForm() {
               onBlur={handleNameBlur}
               placeholder="Введіть ваше ім'я"
               className={`w-full border-2 rounded-lg p-3 focus:outline-none transition-colors ${
-                touched.name && errors.name
-                  ? "border-red-500 bg-red-50 focus:border-red-500"
-                  : touched.name && !errors.name
-                  ? "border-green-500 bg-green-50 focus:border-green-500"
-                  : "border-gray-300 focus:border-green-600"
+                touched.name && errors.name ? "border-red-500 bg-red-50 focus:border-red-500" : touched.name && !errors.name ? "border-green-500 bg-green-50 focus:border-green-500" : "border-gray-300 focus:border-green-600"
               }`}
             />
-            {/* Іконка статусу */}
             {touched.name && (
               <div className={`flex items-center gap-1 mt-1 text-sm font-medium ${errors.name ? "text-red-500" : "text-green-600"}`}>
-                <span>{errors.name ? "✕" : "✓"}</span>
-                <span>{errors.name || "Все добре"}</span>
+                <span>{errors.name ? "✕" : "✓"}</span><span>{errors.name || "Все добре"}</span>
               </div>
             )}
           </div>
 
-          {/* Телефон */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Номер телефону
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Номер телефону</label>
             <div className={`flex w-full border-2 rounded-lg transition-colors overflow-hidden bg-white ${
-              touched.phone && errors.phone
-                ? "border-red-500"
-                : touched.phone && !errors.phone
-                ? "border-green-500"
-                : "border-gray-300 focus-within:border-green-600"
+              touched.phone && errors.phone ? "border-red-500" : touched.phone && !errors.phone ? "border-green-500" : "border-gray-300 focus-within:border-green-600"
             }`}>
               <div className="flex items-center border-r-2 border-gray-300 bg-gray-50">
                 <select
@@ -251,7 +207,7 @@ export default function OrderForm() {
                   onChange={handleCountryChange}
                   className="bg-transparent py-3 pl-3 pr-1 outline-none text-gray-700 font-medium cursor-pointer"
                 >
-                  <option value="+(380)">🇺🇦 +(380)</option>
+                  <option value="+(38)">🇺🇦 +(38)</option>
                   <option value="+(48)">🇵🇱 +(48)</option>
                   <option value="+(49)">🇩🇪 +(49)</option>
                   <option value="+(420)">🇨🇿 +(420)</option>
@@ -260,6 +216,7 @@ export default function OrderForm() {
               </div>
               <input
                 type="tel"
+                inputMode="tel"
                 name="phoneLocal"
                 value={formData.phoneLocal}
                 onChange={handlePhoneLocalChange}
@@ -270,40 +227,23 @@ export default function OrderForm() {
             </div>
             {touched.phone && (
               <div className={`flex items-center gap-1 mt-1 text-sm font-medium ${errors.phone ? "text-red-500" : "text-green-600"}`}>
-                <span>{errors.phone ? "✕" : "✓"}</span>
-                <span>{errors.phone || "Номер валідний"}</span>
+                <span>{errors.phone ? "✕" : "✓"}</span><span>{errors.phone || "Номер валідний"}</span>
               </div>
             )}
           </div>
 
-          {/* Кнопка — сіра якщо форма невалідна */}
+          {/* Кнопка з пульсацією (btn-glow з Home.jsx) */}
           <button
             type="submit"
             disabled={isSubmitting}
-            className={`w-full text-white font-black text-xl py-4 mt-2 rounded-xl shadow-lg transform transition uppercase flex justify-center items-center ${
-              isSubmitting
-                ? "bg-red-700 opacity-90 cursor-wait"
-                : isFormValid
-                ? "bg-red-600 hover:bg-red-700 active:scale-95 shadow-[0_5px_15px_rgba(220,38,38,0.5)]"
-                : "bg-gray-400 cursor-not-allowed"
+            className={`btn-glow w-full text-white font-black text-xl py-4 mt-2 rounded-xl transform transition uppercase flex justify-center items-center ${
+              isSubmitting ? "bg-red-700 opacity-90 cursor-wait" : "bg-red-600 hover:bg-red-700 active:scale-95"
             }`}
           >
-            {isSubmitting ? (
-              <>
-                <svg className="animate-spin -ml-1 mr-3 h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Обробка...
-              </>
-            ) : (
-              "Замовити (275 грн)"
-            )}
+            {isSubmitting ? "Обробка..." : "Замовити (275 грн)"}
           </button>
-
         </form>
       </div>
-
       <SuccessModal isOpen={isSuccess} onClose={() => setIsSuccess(false)} />
     </>
   );
