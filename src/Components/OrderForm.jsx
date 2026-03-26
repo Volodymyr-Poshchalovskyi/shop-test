@@ -3,20 +3,10 @@ import React, { useState } from "react";
 import { submitOrderData } from "../Services/api";
 import SuccessModal from "./SuccessModal";
 
-// Оновили +380 на +38, додали формат з 10 цифр (напр. 099 123 45 67)
-const COUNTRY_CONFIG = {
-  "+(38)":  { code: "UA", minDigits: 10, placeholder: "099 000 00 00" },
-  "+(48)":  { code: "PL", minDigits: 9, placeholder: "000 000 000" },
-  "+(49)":  { code: "DE", minDigits: 10, placeholder: "0000 0000000" },
-  "+(420)": { code: "CZ", minDigits: 9, placeholder: "000 000 000" },
-  "+(373)": { code: "MD", minDigits: 8, placeholder: "00 000 000" },
-};
-
 export default function OrderForm() {
   const [formData, setFormData] = useState({
     name: "",
-    phoneCode: "+(38)", // Змінено на +38
-    phoneLocal: "",
+    phone: "",
     website: "",
   });
 
@@ -41,13 +31,10 @@ export default function OrderForm() {
     return "";
   };
 
-  const validatePhone = (phoneCode, phoneLocal) => {
-    const digits = phoneLocal.replace(/\D/g, "");
-    const config = COUNTRY_CONFIG[phoneCode];
-    
+  const validatePhone = (phone) => {
+    const digits = phone.replace(/\D/g, "");
     if (!digits) return "Введіть номер телефону";
-    if (digits.length < config.minDigits) return `Номер має містити мінімум ${config.minDigits} цифр`;
-
+    if (digits.length < 10) return "Номер має містити мінімум 10 цифр";
     return "";
   };
 
@@ -70,34 +57,34 @@ export default function OrderForm() {
     setErrors((prev) => ({ ...prev, name: validateName(formData.name) }));
   };
 
-  const handlePhoneLocalChange = (e) => {
-    let digits = e.target.value.replace(/\D/g, "");
-    const config = COUNTRY_CONFIG[formData.phoneCode];
-    let formatted = digits;
+  // Автоматично додаємо +380 при фокусі на інпут, якщо він порожній
+  const handlePhoneFocus = () => {
+    if (!formData.phone) {
+      setFormData((prev) => ({ ...prev, phone: "+380" }));
+    }
+  };
 
-    // Нова логіка для України (+38) — дозволяємо вводити 0 на початку
-    if (formData.phoneCode === "+(38)") {
-      digits = digits.slice(0, 10); // 10 цифр: 0991234567
-      formatted = digits;
-      if (digits.length > 3) formatted = digits.slice(0, 3) + " " + digits.slice(3); // 099 123...
-      if (digits.length > 6) formatted = formatted.slice(0, 7) + " " + formatted.slice(7); // 099 123 45...
-      if (digits.length > 8) formatted = formatted.slice(0, 10) + " " + formatted.slice(10); // 099 123 45 67
-    } else if (formData.phoneCode === "+(48)" || formData.phoneCode === "+(420)") {
-      digits = digits.slice(0, 9);
-      formatted = digits;
-      if (digits.length > 3) formatted = digits.slice(0, 3) + " " + digits.slice(3);
-      if (digits.length > 6) formatted = formatted.slice(0, 7) + " " + formatted.slice(7);
-    } else {
-      digits = digits.slice(0, 15);
-      formatted = digits;
+  const handlePhoneChange = (e) => {
+    // Залишаємо тільки цифри та знак +
+    let val = e.target.value.replace(/[^\d+]/g, "");
+
+    // Якщо користувач почав вводити цифри без плюса, допомагаємо йому
+    if (val.length > 0 && !val.startsWith("+")) {
+      if (val.startsWith("380")) {
+        val = "+" + val;
+      } else if (val.startsWith("0")) {
+        val = "+38" + val;
+      } else {
+        val = "+380" + val;
+      }
     }
 
-    setFormData((prev) => ({ ...prev, phoneLocal: formatted }));
+    setFormData((prev) => ({ ...prev, phone: val }));
 
     if (touched.phone) {
       setErrors((prev) => ({
         ...prev,
-        phone: validatePhone(formData.phoneCode, formatted),
+        phone: validatePhone(val),
       }));
     }
   };
@@ -106,15 +93,8 @@ export default function OrderForm() {
     setTouched((prev) => ({ ...prev, phone: true }));
     setErrors((prev) => ({
       ...prev,
-      phone: validatePhone(formData.phoneCode, formData.phoneLocal),
+      phone: validatePhone(formData.phone),
     }));
-  };
-
-  const handleCountryChange = (e) => {
-    const newCode = e.target.value;
-    setFormData((prev) => ({ ...prev, phoneCode: newCode, phoneLocal: "" }));
-    setErrors((prev) => ({ ...prev, phone: "" }));
-    setTouched((prev) => ({ ...prev, phone: false }));
   };
 
   const handleSubmit = async (e) => {
@@ -129,7 +109,7 @@ export default function OrderForm() {
     }
 
     const nameError = validateName(formData.name);
-    const phoneError = validatePhone(formData.phoneCode, formData.phoneLocal);
+    const phoneError = validatePhone(formData.phone);
 
     setTouched({ name: true, phone: true });
     setErrors({ name: nameError, phone: phoneError });
@@ -141,13 +121,14 @@ export default function OrderForm() {
 
     const finalDataToSubmit = {
       name: formData.name.trim(),
-      phone: `'${formData.phoneCode} ${formData.phoneLocal}`.trim(),
+      // Зберігаємо апостроф на початку, щоб Google Sheets розпізнавав як текст
+      phone: `'${formData.phone}`.trim(), 
     };
 
     try {
       await submitOrderData(finalDataToSubmit);
       setIsSuccess(true);
-      setFormData({ name: "", phoneCode: "+(38)", phoneLocal: "", website: "" });
+      setFormData({ name: "", phone: "", website: "" });
       setTouched({ name: false, phone: false });
       setErrors({ name: "", phone: "" });
       setTimeout(() => setIsSuccess(false), 5000);
@@ -157,8 +138,6 @@ export default function OrderForm() {
       setIsSubmitting(false);
     }
   };
-
-  const config = COUNTRY_CONFIG[formData.phoneCode];
 
   return (
     <>
@@ -200,28 +179,15 @@ export default function OrderForm() {
             <div className={`flex w-full border-2 rounded-lg transition-colors overflow-hidden bg-white ${
               touched.phone && errors.phone ? "border-red-500" : touched.phone && !errors.phone ? "border-green-500" : "border-gray-300 focus-within:border-green-600"
             }`}>
-              <div className="flex items-center border-r-2 border-gray-300 bg-gray-50">
-                <select
-                  name="phoneCode"
-                  value={formData.phoneCode}
-                  onChange={handleCountryChange}
-                  className="bg-transparent py-3 pl-3 pr-1 outline-none text-gray-700 font-medium cursor-pointer"
-                >
-                  <option value="+(38)">🇺🇦 +(38)</option>
-                  <option value="+(48)">🇵🇱 +(48)</option>
-                  <option value="+(49)">🇩🇪 +(49)</option>
-                  <option value="+(420)">🇨🇿 +(420)</option>
-                  <option value="+(373)">🇲🇩 +(373)</option>
-                </select>
-              </div>
               <input
                 type="tel"
                 inputMode="tel"
-                name="phoneLocal"
-                value={formData.phoneLocal}
-                onChange={handlePhoneLocalChange}
+                name="phone"
+                value={formData.phone}
+                onChange={handlePhoneChange}
+                onFocus={handlePhoneFocus}
                 onBlur={handlePhoneBlur}
-                placeholder={config.placeholder}
+                placeholder="+380 99 000 00 00"
                 className="w-full p-3 focus:outline-none tracking-wide bg-transparent"
               />
             </div>
@@ -232,7 +198,6 @@ export default function OrderForm() {
             )}
           </div>
 
-          {/* Кнопка з пульсацією (btn-glow з Home.jsx) */}
           <button
             type="submit"
             disabled={isSubmitting}
