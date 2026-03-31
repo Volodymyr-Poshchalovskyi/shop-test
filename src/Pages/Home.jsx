@@ -4,9 +4,12 @@ import CountdownTimer from "../Components/CountdownTimer";
 import OrderForm from "../Components/OrderForm";
 import { Link } from "react-router-dom";
 
-import universalBlockImage from "../assets/images/IMG_2871.webp";
-import image1 from "../assets/images/IMG_2859.webp";
+// Зображення image1 та universalBlockImage видалені, оскільки вони більше не використовуються
 import image3 from "../assets/images/IMG_2867.webp";
+// Крок 1: Імпортуємо зображення Watermarks.webp
+import watermarksImage from "../assets/images/Watermarks.webp";
+// Імпортуємо відео
+import promoVideo from "../assets/images/Video.mp4";
 
 export default function Home() {
   // Стейт для лічильника продажів з перевіркою localStorage
@@ -111,11 +114,9 @@ export default function Home() {
         </div>
 
         {/* Таймер та Блок продажів */}
-        {/* Таймер та Блок продажів */}
         <div className="sticky top-0 z-50 bg-white border-b-2 border-green-700 shadow-md py-1.5 px-2 flex flex-col items-center justify-center">
           <CountdownTimer />
           
-          {/* ОНОВЛЕНИЙ БЛОК: Продано сьогодні (без фону, менший розмір) */}
           <div className="mt-1 flex items-center gap-1.5">
             <span className="text-xs font-medium text-gray-600">Продано сьогодні:</span>
             <span className={`text-red-600 font-bold text-sm ${animateSold ? "animate-pop" : ""}`}>
@@ -126,21 +127,32 @@ export default function Home() {
         </div>
 
         {/* Заголовок (З оптимізацією H1 для SEO) */}
-        <div className="p-4 text-center">
+        <div className="p-5 text-center mt-2 rounded-xl shadow-md">
           <h1 className="sr-only">Купити квіти метелики в Україні</h1>
-          <div className="text-3xl font-extrabold text-green-800 mb-2 uppercase" aria-hidden="true">Квіти метелики</div>
+          
+          <div 
+            className="text-4xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-800 to-green-500 mb-3 uppercase tracking-wider drop-shadow-md" 
+            aria-hidden="true"
+          >
+            Квіти метелики
+          </div>
           
           <div className="inline-flex items-center gap-1 bg-green-50 border border-green-100 px-3 py-1 rounded-full text-sm font-bold text-green-800 mb-3">
             <span className="text-base leading-none">🇳🇱</span> Оригінальне насіння з Нідерландів
           </div>
-          <p className="text-gray-600 font-medium mb-4">Найкращі сорти, які швидко ростуть</p>
+          <p className="text-gray-600 font-medium mb-4">Найкращі сорта, які швидко ростуть</p>
           
-          {/* Змінено src та додано eager/fetchpriority */}
-          <img src="/IMG_2863.webp" alt="Квіти метелики" loading="eager" fetchpriority="high" className="w-full h-auto rounded-xl shadow-md object-cover" />
+          <img src="/IMG_2863.webp" alt="Квіти метелики" loading="eager" fetchpriority="high" className="w-full h-auto object-cover" />
+          
+          <img 
+            src={watermarksImage} 
+            alt="Відгуки та гарантія якості" 
+            className="w-full h-auto object-contain -mb-5" 
+          />
         </div>
 
         {/* Блок цін */}
-        <div className="bg-green-800 text-white flex justify-between items-center w-full px-6 py-4 shadow-inner">
+        <div className="bg-green-800 text-white flex justify-between items-center w-full px-6 py-4 shadow-inner mt-2">
           <div className="flex flex-col items-center price-jump" style={{ animationDelay: "0s" }}>
             <span className="text-sm text-green-200">Звичайна ціна</span>
             <span className="text-2xl line-through font-semibold text-gray-300">550 грн</span>
@@ -153,7 +165,7 @@ export default function Home() {
         </div>
 
         {/* Кнопка CTA з пульсацією btn-glow */}
-        <div className="px-4 mt-4">
+        <div className="px-4 mt-6 mb-4">
           <button
             onClick={scrollToForm}
             className="btn-glow w-full bg-red-600 hover:bg-red-700 text-white font-black text-xl py-5 rounded-full transform transition active:scale-95 uppercase"
@@ -162,48 +174,33 @@ export default function Home() {
           </button>
         </div>
 
-        {/* Опис */}
-        <div className="px-5 py-8 space-y-6 text-md leading-relaxed">
-          <div>
-            <h2 className="text-xl font-bold text-center text-green-800 mb-3 uppercase">Неймовірні квіти з цвітом у формі метеликів</h2>
-            <img src={image1} alt="Квіти метелики крупним планом" loading="lazy" decoding="async" className="w-full rounded-lg mb-4" />
-            <p>Краса саду не виникає сама по собі. Вона починається з маленького бажання — додати кольору, затишку, трохи живого навколо. Здається, достатньо кількох квітів — і все заграє.</p>
-            <p className="mt-2 font-semibold text-green-700">Все починається з першого кроку — вибору насіння квітів, які живуть, ростуть і радують без зайвих зусиль.</p>
-          </div>
-
-          <div className="bg-green-50 p-4 rounded-xl border border-green-100">
-            <h2 className="text-xl font-bold text-center text-green-800 mb-3 uppercase">Чому обирають наші квіти метелики</h2>
-            <p>Квіти-метелики — це не просто рослина. Це характер у вашому саду. Їхні пелюстки, що нагадують крила метелика, перетворюють будь-який куточок на щось справді особливе.</p>
-          </div>
-          
-          <div>
-            <h2 className="text-xl font-bold text-center text-green-800 mb-3 uppercase">🌿 Універсальні для будь-якого простору</h2>
-            <img src={universalBlockImage} alt="Квіти метелики в саду та на балконі" loading="lazy" decoding="async" className="w-full rounded-lg mb-4" />
-          </div>
-        </div>
-
-        <div className="px-4 py-4">
-          <button
-            onClick={scrollToForm}
-            className="btn-glow w-full bg-green-600 hover:bg-green-700 text-white font-bold text-xl py-4 rounded-xl transform transition active:scale-95 uppercase"
-          >
-            Замовити зараз
-          </button>
-        </div>
-
         {/* Переваги */}
-        <div className="px-5 py-6">
+        <div className="px-5 py-6 mt-4">
           <h2 className="text-2xl font-bold text-center text-gray-900 mb-6 uppercase">Що робить ці квіти ідеальними</h2>
           <ul className="space-y-4">
             <li className="flex items-start gap-3"><span className="text-xl shrink-0 leading-none mt-1">🦋</span><p><b>Природний магніт</b> — приваблює метеликів і бджіл прямо до вас у сад.</p></li>
             <li className="flex items-start gap-3"><span className="text-xl shrink-0 leading-none mt-1">🌱</span><p><b>Справжній багаторічник</b> — один раз посадили, роками насолоджуєтесь.</p></li>
             <li className="flex items-start gap-3"><span className="text-xl shrink-0 leading-none mt-1">❄️</span><p><b>Морозостійкий</b> — витримує до −20°C без укриття.</p></li>
           </ul>
-          <img src={image3} alt="Сад з квітами метеликами" loading="lazy" decoding="async" className="w-full rounded-lg mt-6" />
+
+          {/* ТУТ ВСТАВЛЕНО ВІДЕО */}
+          {/* Класи 'rounded-lg mt-6 shadow-md' додані для стилізації під фото, що йде нижче */}
+          <video 
+            src={promoVideo}
+            autoPlay 
+            loop 
+            muted 
+            playsInline
+            preload="metadata"
+            className="w-full h-auto object-cover rounded-lg mt-6 shadow-md"
+          />
+
+          {/* Фото, що йде ПІСЛЯ тексту та відео */}
+          <img src={image3} alt="Сад з квітами метеликами" loading="lazy" decoding="async" className="w-full rounded-lg mt-6 shadow-md" />
         </div>
 
         {/* Як замовити */}
-        <div className="bg-[#366843] py-8 px-4 text-white">
+        <div className="bg-[#366843] py-8 px-4 text-white mt-4">
           <h2 className="text-2xl font-extrabold text-center mb-6 drop-shadow-md">Як зробити<br />замовлення?</h2>
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-[#8ca891] border-2 border-white rounded-xl p-4 flex flex-col items-center text-center text-gray-900">
